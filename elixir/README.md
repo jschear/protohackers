@@ -7,5 +7,14 @@ To create a new application:
 cd apps/
 mix new smoke_test --module SmokeTest --sup
 ```
+Then add a new entry in `mix.exs`'s `releases` block.
 
-Then copy over a `.dockerignore`, `Dockerfile`, and `fly.toml`. (Assuming we're deploying to fly.io using a docker image.)
+To build an image:
+```bash
+docker build . --build-arg=APP=smoke_test
+```
+
+To deploy to fly.io:
+```bash
+fly deploy --build-arg=APP=smoke_test
+```
