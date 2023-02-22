@@ -17,3 +17,5 @@ async fn process(mut socket: TcpStream) {
     let (mut read, mut write) = socket.split();
     tokio::io::copy(&mut read, &mut write).await.unwrap();
 }
+
+struct Hello {}
