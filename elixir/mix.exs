@@ -10,6 +10,12 @@ defmodule ProtohackersElixir.MixProject do
       releases: [
         smoke_test: [
           applications: [smoke_test: :permanent]
+        ],
+        means_to_an_end: [
+          applications: [means_to_an_end: :permanent]
+        ],
+        budget_chat: [
+          applications: [budget_chat: :permanent]
         ]
       ]
     ]
