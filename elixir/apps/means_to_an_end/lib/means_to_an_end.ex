@@ -14,7 +14,7 @@ defmodule MeansToAnEnd do
       Task.Supervisor.start_child(MeansToAnEnd.TaskSupervisor, fn -> serve(client, %{}) end)
 
     with {:error, reason} <- :gen_tcp.controlling_process(client, pid) do
-      Logger.info(inspect(reason))
+      Logger.info("#{inspect(self())} - Error: #{inspect(reason)}")
     end
 
     loop_acceptor(socket)
@@ -23,16 +23,13 @@ defmodule MeansToAnEnd do
   defp serve(socket, map) do
     case :gen_tcp.recv(socket, 9) do
       {:ok, <<?I, timestamp::32-integer-signed, price::32-integer-signed>>} ->
-        Logger.info("Insert: #{timestamp}, #{price}")
-        map = Map.put(map, timestamp, price)
-        serve(socket, map)
+        newmap = Map.put(map, timestamp, price)
+        serve(socket, newmap)
 
       {:ok, <<?Q, mintime::32-integer-signed, maxtime::32-integer-signed>>} ->
-        Logger.info("Query: #{mintime}, #{maxtime}")
-
         average_price =
           cond do
-            mintime >= maxtime ->
+            mintime > maxtime ->
               0
 
             true ->
@@ -48,7 +45,7 @@ defmodule MeansToAnEnd do
                   end
                 )
 
-              Logger.info("Price sum, count: #{price_sum}, #{count}")
+              Logger.info("#{inspect(self())} - Price sum, count: #{price_sum}, #{count}")
 
               case count do
                 0 ->
@@ -59,16 +56,16 @@ defmodule MeansToAnEnd do
               end
           end
 
-        Logger.info("Average price: #{average_price}")
+        Logger.info("#{inspect(self())} - Average price: #{average_price}")
 
         :gen_tcp.send(socket, <<average_price::integer-signed-size(32)>>)
         serve(socket, map)
 
       {:error, reason} ->
-        Logger.info(inspect(reason))
+        Logger.info("#{inspect(self())} - Error: #{inspect(reason)}")
 
       anything ->
-        Logger.info("Error parsing message: #{inspect(anything)}")
+        Logger.info("#{inspect(self())} - Error parsing message: #{inspect(anything)}")
     end
   end
 end
